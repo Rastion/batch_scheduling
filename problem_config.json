@@ -1,0 +1,39 @@
+{
+    "entry_point": "batch_scheduling_problem:BatchSchedulingProblem",
+    "default_params": {
+      "instance_file": "instances/5_2-000.nfb"
+    },
+    "problem_type": "BatchScheduling",
+    "description": "In the batch scheduling problem, a set of tasks must be processed in batches on available resources. Tasks in each batch must have the same type and duration, and the number of tasks per batch cannot exceed the resource capacity. Additionally, precedence constraints between tasks must be respected. The objective is to minimize the makespan – the time when all batches have been processed.",
+    "keywords": [
+      "batch scheduling",
+      "scheduling",
+      "resource allocation",
+      "optimization"
+    ],
+    "data_format": {
+      "instance_file": {
+        "format": "First line: number of tasks and number of resources. Second line: maximum capacity for each resource. For each subsequent task: task resource assignment, task type, task duration, number of successors, followed by the successor task numbers."
+      }
+    },
+    "decision_variables": {
+      "batch_schedule": {
+        "type": "list of batches",
+        "description": "Each batch is a dictionary with keys: 'resource' (int), 'tasks' (list of int), 'start' (int), and 'end' (int)."
+      }
+    },
+    "objective": {
+      "type": "minimization",
+      "function": "Makespan (the maximum end time over all batches)",
+      "description": "Minimize the time when all batches have been processed, while satisfying capacity, batching, and precedence constraints. Infeasible solutions incur a high penalty."
+    },
+    "solution_representation": "A dictionary with a key 'batch_schedule' containing a list of batches. Each batch is represented by a dictionary with 'resource' (int), 'tasks' (list of int), 'start' (int), and 'end' (int).",
+    "compatible_optimizers": [
+      "genetic_algorithm",
+      "simulated_annealing",
+      "tabu_search",
+      "particle_swarm"
+    ],
+    "notes": "The instance data follows the Taillard format. The problem involves grouping tasks into batches (with homogeneous task type and duration) subject to resource capacity, scheduling non-overlapping batches per resource, and respecting task precedence constraints."
+  }
+  
