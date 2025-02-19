@@ -5,12 +5,7 @@
     },
     "problem_type": "BatchScheduling",
     "description": "In the batch scheduling problem, a set of tasks must be processed in batches on available resources. Tasks in each batch must have the same type and duration, and the number of tasks per batch cannot exceed the resource capacity. Additionally, precedence constraints between tasks must be respected. The objective is to minimize the makespan – the time when all batches have been processed.",
-    "keywords": [
-      "batch scheduling",
-      "scheduling",
-      "resource allocation",
-      "optimization"
-    ],
+    "keywords": ["batch scheduling", "scheduling", "precedence", "resource capacity", "makespan", "combinatorial"],
     "data_format": {
       "instance_file": {
         "format": "First line: number of tasks and number of resources. Second line: maximum capacity for each resource. For each subsequent task: task resource assignment, task type, task duration, number of successors, followed by the successor task numbers."
