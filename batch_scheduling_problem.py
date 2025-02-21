@@ -358,7 +358,8 @@ class BatchSchedulingProblem(BaseProblem):
             chosen = [s for s in valid_starts if bitstring[self.var_to_index[(t, s)]] == 1]
             if len(chosen) != 1:
                 # Either no start time or multiple start times were chosen for task t.
-                return None, float('inf')
+                #return None, float('inf')
+                continue
             task_start[t] = chosen[0]
         
         # Step 2: Group tasks into batches.
@@ -376,7 +377,8 @@ class BatchSchedulingProblem(BaseProblem):
             for (s, ttype, d), tasks in groups.items():
                 if len(tasks) > self.capacity[r]:
                     # Capacity violation: too many tasks grouped together.
-                    return None, float('inf')
+                    #return None, float('inf')
+                    continue
                 batches.append({
                     "resource": r,
                     "tasks": tasks,
