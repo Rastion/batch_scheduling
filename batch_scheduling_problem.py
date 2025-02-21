@@ -341,51 +341,52 @@ class BatchSchedulingProblem(BaseProblem):
         Decode a bitstring solution (list/array of 0/1 corresponding to QUBO variables) into
         the original batch scheduling format.
         
-        For each task t, exactly one variable x_{t,s} should be 1. The chosen start times are then used
-        to form batches. Tasks on the same resource with the same start time, type, and duration are grouped
-        into a single batch.
+        For each task t, we select a start time as follows:
+          - If no allowed start time is active (i.e. equals 1), assign a default value (0).
+          - If more than one start time is active, choose the first one.
+          
+        Tasks on the same resource with the same start time, type, and duration are grouped
+        into one batch.
         
         Returns:
             solution: A dictionary {"batch_schedule": [batch, ...]} where each batch is a dictionary with:
-                        "resource", "tasks", "start", and "end".
+                      "resource", "tasks", "start", and "end".
             cost: The cost (makespan) computed by evaluate_solution.
         """
-        # Step 1: Determine the assigned start time for each task.
+        # Determine the assigned start time for each task.
         task_start = {}
         for t in range(self.nb_tasks):
             valid_starts = range(0, self.time_horizon - self.duration[t] + 1)
-            # Find all start times with a 1 in the bitstring.
+            # Collect all start times with a 1 in the bitstring.
             chosen = [s for s in valid_starts if bitstring[self.var_to_index[(t, s)]] == 1]
-            if len(chosen) != 1:
-                # Either no start time or multiple start times were chosen for task t.
-                #return None, float('inf')
-                continue
-            task_start[t] = chosen[0]
+            if not chosen:
+                # No assignment: assign a default start time (will be penalized later)
+                task_start[t] = 0
+            else:
+                # If multiple assignments exist, choose the first.
+                task_start[t] = chosen[0]
         
-        # Step 2: Group tasks into batches.
-        # We group tasks on the same resource that share the same (start time, type, duration).
-        batches = []
-        for r in range(self.nb_resources):
-            # Get tasks assigned to resource r.
-            tasks_on_r = [t for t in range(self.nb_tasks) if self.resources[t] == r]
-            # Group tasks by (start, type, duration)
-            groups = {}
-            for t in tasks_on_r:
-                key = (task_start[t], self.types[t], self.duration[t])
-                groups.setdefault(key, []).append(t)
-            # Create a batch for each group.
-            for (s, ttype, d), tasks in groups.items():
-                if len(tasks) > self.capacity[r]:
-                    # Capacity violation: too many tasks grouped together.
-                    #return None, float('inf')
-                    continue
-                batches.append({
-                    "resource": r,
-                    "tasks": tasks,
-                    "start": s,
-                    "end": s + d
-                })
+        # Group tasks into batches: tasks with the same resource, start time, type, and duration form one batch.
+        batches_dict = {}
+        for t in range(self.nb_tasks):
+            r = self.resources[t]
+            s = task_start[t]
+            ttype = self.types[t]
+            d = self.duration[t]
+            key = (r, s, ttype, d)
+            batches_dict.setdefault(key, []).append(t)
         
-        solution = {"batch_schedule": batches}
+        batch_schedule = []
+        for key, tasks in batches_dict.items():
+            r, s, ttype, d = key
+            batch_schedule.append({
+                "resource": r,
+                "tasks": tasks,
+                "start": s,
+                "end": s + d
+            })
+        
+        solution = {"batch_schedule": batch_schedule}
         cost = self.evaluate_solution(solution)
         return solution, cost
+
