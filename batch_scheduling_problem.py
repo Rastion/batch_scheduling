@@ -204,8 +204,8 @@ class BatchSchedulingProblem(BaseProblem):
             })
         return {"batch_schedule": batches}
 
-    def get_qubo(self, lambda_unique=10, lambda_prec=10, lambda_overlap=10, 
-                 lambda_capacity=10, lambda_batch=10, objective_weight=1):
+    def get_qubo(self, lambda_unique=10^8, lambda_prec=10^8, lambda_overlap=10^8, 
+                 lambda_capacity=10^8, lambda_batch=10^8, objective_weight=10^8):
         """
         Construct a complete QUBO formulation of the scheduling problem.
         
