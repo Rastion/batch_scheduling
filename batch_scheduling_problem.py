@@ -342,54 +342,48 @@ class BatchSchedulingProblem(BaseProblem):
         the original batch scheduling format.
         
         For each task t, exactly one variable x_{t,s} should be 1. The chosen start times are then used
-        to form batches. Tasks that share the same resource, start time, type, and duration are grouped
-        into one batch.
+        to form batches. Tasks on the same resource with the same start time, type, and duration are grouped
+        into a single batch.
         
         Returns:
             solution: A dictionary {"batch_schedule": [batch, ...]} where each batch is a dictionary with:
-                      "resource", "tasks", "start", and "end".
+                        "resource", "tasks", "start", and "end".
             cost: The cost (makespan) computed by evaluate_solution.
         """
+        # Step 1: Determine the assigned start time for each task.
         task_start = {}
         for t in range(self.nb_tasks):
             valid_starts = range(0, self.time_horizon - self.duration[t] + 1)
-            assigned = None
-            for s in valid_starts:
-                idx = self.var_to_index.get((t, s))
-                if idx is None:
-                    continue
-                if bitstring[idx] == 1:
-                    if assigned is not None:
-                        # More than one start time chosen for task t: infeasible.
-                        return None, float('inf')
-                    assigned = s
-            if assigned is None:
-                # No start time assigned: infeasible.
+            # Find all start times with a 1 in the bitstring.
+            chosen = [s for s in valid_starts if bitstring[self.var_to_index[(t, s)]] == 1]
+            if len(chosen) != 1:
+                # Either no start time or multiple start times were chosen for task t.
                 return None, float('inf')
-            task_start[t] = assigned
-
-        # Group tasks into batches: tasks with the same resource, start time, type, and duration form one batch.
-        batches_dict = {}
-        for t in range(self.nb_tasks):
-            r = self.resources[t]
-            s = task_start[t]
-            ttype = self.types[t]
-            d = self.duration[t]
-            key = (r, s, ttype, d)
-            if key not in batches_dict:
-                batches_dict[key] = []
-            batches_dict[key].append(t)
-
-        batch_schedule = []
-        for key, tasks in batches_dict.items():
-            r, s, ttype, d = key
-            batch_schedule.append({
-                "resource": r,
-                "tasks": tasks,
-                "start": s,
-                "end": s + d
-            })
-
-        solution = {"batch_schedule": batch_schedule}
+            task_start[t] = chosen[0]
+        
+        # Step 2: Group tasks into batches.
+        # We group tasks on the same resource that share the same (start time, type, duration).
+        batches = []
+        for r in range(self.nb_resources):
+            # Get tasks assigned to resource r.
+            tasks_on_r = [t for t in range(self.nb_tasks) if self.resources[t] == r]
+            # Group tasks by (start, type, duration)
+            groups = {}
+            for t in tasks_on_r:
+                key = (task_start[t], self.types[t], self.duration[t])
+                groups.setdefault(key, []).append(t)
+            # Create a batch for each group.
+            for (s, ttype, d), tasks in groups.items():
+                if len(tasks) > self.capacity[r]:
+                    # Capacity violation: too many tasks grouped together.
+                    return None, float('inf')
+                batches.append({
+                    "resource": r,
+                    "tasks": tasks,
+                    "start": s,
+                    "end": s + d
+                })
+        
+        solution = {"batch_schedule": batches}
         cost = self.evaluate_solution(solution)
         return solution, cost
