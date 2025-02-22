@@ -16,6 +16,7 @@
         "format": "First line: number of tasks and number of resources. Second line: maximum capacity for each resource. For each subsequent task: task resource assignment, task type, task duration, number of successors, followed by the successor task numbers."
       }
     },
+    "link_to_dataset": "https://github.com/Rastion/batch_scheduling/blob/main/instances/5_2-000.nfb",
     "decision_variables": {
       "batch_schedule": {
         "type": "list of batches",
