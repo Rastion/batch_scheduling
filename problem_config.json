@@ -4,12 +4,13 @@
     "instance_file": "instances/5_2-000.nfb"
   },
   "creator": "Rastion",
+  "type": "problem",
   "problem_name": "Batch Scheduling",
   "description": "In the batch scheduling problem, a set of tasks must be processed in batches on available resources. Tasks in each batch must have the same type and duration, and the number of tasks per batch cannot exceed the resource capacity. Additionally, precedence constraints between tasks must be respected. The objective is to minimize the makespan – the time when all batches have been processed.",
   "link_to_dataset": "https://github.com/Rastion/batch_scheduling/blob/main/instances/5_2-000.nfb",
   "keywords": [
     "batch scheduling",
-    "scheduling",
+    "production-scheduling",
     "resource allocation",
     "optimization"
   ],
